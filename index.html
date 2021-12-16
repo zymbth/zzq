@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+        <link rel="icon" href="<%= BASE_URL %>favicon.ico">
+        <script src="https://cdn.jsdelivr.net/npm/vue@3.0.11/dist/vue.global.min.js"></script>
+        <title>放置自走棋阵容模拟</title>
+    </head>
+    <body>
+        <noscript>
+            <strong>We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
+        </noscript>
+        <div id="app">
+            <!-- 功能选项 -->
+            <button @click="hideDetails = !hideDetails">{{hideDetails ? '显示种族/职业' : '隐藏种族/职业'}}</button>
+            <button @click="showFilterTrigger">筛选</button>
+            <!-- 筛选 -->
+            <div v-show="showFilters" class="filters-container">
+                <p
+                    v-for="filterOption in [{name:'种族',data:raceList},{name:'职业',data:occupationList},{name:'其它',data:specialList}]"
+                    :key="filterOption.name"
+                >
+                    <span><b>{{filterOption.name}}：</b></span>
+                    <span
+                        v-for="option in filterOption.data"
+                        :key="option.no"
+                        @click="option.isFilter = !option.isFilter"
+                        class="span-filter-item"
+                        :class="{ 'is-filter': option.isFilter }"
+                    >{{option.name}}</span>
+                </p>
+                <button @click="clearFilters">清空筛选项</button>
+                <button @click="showFilterTrigger">收起</button>
+            </div>
+            <!-- 英雄 -->
+            <div class="hero-display">
+                <div v-for="q in 5" :key="q">
+                    <span
+                        v-for="hero in heros.filter(h => h.quality === q)"
+                        :key="hero.name"
+                        :class="{
+                            'hero-selected': hero.selected,
+                            'hero-in-filter':
+                                raceList.find(c => c.no === hero.race).isFilter ||
+                                hero.occupation && occupationList.find(o => o.no === hero.occupation).isFilter ||
+                                hero.special && specialList.find(o => o.no === hero.special).isFilter
+                        }"
+                        @click="heroSelectTrigger(hero)"
+                    >
+                        {{hero.name}}
+                        {{
+                            hideDetails
+                                ? ''
+                                : `(${[
+                                        raceList.find(c => c.no === hero.race).name,
+                                        hero.occupation && occupationList.find(o => o.no === hero.occupation).name,
+                                        hero.special && specialList.find(o => o.no === hero.special).name
+                                    ].filter(c => c).join('|')})`
+                        }}
+                    </span>
+                </div>
+            </div>
+            <!-- 阵容 -->
+            <p v-if="population">上阵人口：{{population}}</p>
+            <div v-show="relations?.length" class="hero-relations">
+                <div v-for="rel in relations" :key="rel.name">
+                    <span :class="'buff-lv'+rel.buffLv">{{rel.name}} ({{rel.count}}/{{rel.max}}) {{rel.buffView}} {{rel.buffBrefTxt}}</span>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
+<script>
+const AttributeBindingApp = {
+    data() {
+        return {
+            hideDetails: true,    // 隐藏种族、职业等特性
+            showFilters: false,   // 显示筛选框
+            raceList: [           // 种族列表
+                { no: 1, name: '人类', count: 0, isFilter: false, buff: [2,4,6], buffVal: ['30%','60%','90%'], buffBrefTxt: '生命+?', buffTxt: '人类生命提升(30%/60%/90%)' },
+                { no: 2, name: '兽人', count: 0, isFilter: false, buff: [2,4,6], buffVal: ['15%','30%','45%'], buffBrefTxt: '吸取+?', buffTxt: '兽人攻击时吸取生命(15%/30%/45%)' },
+                { no: 3, name: '精灵', count: 0, isFilter: false, buff: [2,4,6], buffVal: ['25%','50%','75%'], buffBrefTxt: '暴击+?', buffTxt: '提高精灵的暴击(25%/50%/75%)' },
+                { no: 4, name: '恶魔', count: 0, isFilter: false, buff: [2,4,6], buffVal: ['30%','60%','100%'], buffBrefTxt: '伤害+?', buffTxt: '提高恶魔的伤害(30%/60%/100%)' },
+                { no: 5, name: '神族', count: 0, isFilter: false, buff: [2,4,6], buffVal: ['5','10','15'], buffBrefTxt: '吸取SP+?', buffTxt: '神族攻击时吸取SP(5/10/15)' }
+            ],
+            occupationList: [     // 职业列表
+                { no: 1, name: '战士', count: 0, isFilter: false, buff: [2,4], buffVal: ['25%','50%'], buffBrefTxt: '伤害减免+?', buffTxt: '战士伤害减免(25%/50%)' },
+                { no: 2, name: '法师', count: 0, isFilter: false, buff: [2,4], buffVal: ['100%','150%'], buffBrefTxt: '技能伤害+?', buffTxt: '提高法师的技能伤害(100%/150%)' },
+                { no: 3, name: '信徒', count: 0, isFilter: false, buff: [2,4], buffVal: ['40%','80%'], buffBrefTxt: '护盾+?', buffTxt: '技能触发：生命最少的友军获得伤害减免的护盾(40%/80%)' },
+                { no: 4, name: '游侠', count: 0, isFilter: false, buff: [2,4], buffVal: ['30%','60%'], buffBrefTxt: '攻速+?', buffTxt: '提高游侠的攻速(30%/60%)' },
+                { no: 5, name: '强盗', count: 0, isFilter: false, buff: [2,4], buffVal: ['100%','200%'], buffBrefTxt: '背刺+?', buffTxt: '强盗在敌人背面可以造成背刺伤害(100%/200%)' },
+                { no: 6, name: '术士', count: 0, isFilter: false, buff: [2], buffVal: ['30%'], buffBrefTxt: '魔+50,目标减防-?', buffTxt: '初始魔法50，攻击时降低目标防御(-30%)' },
+                { no: 7, name: '魔猎人', count: 0, isFilter: false, buff: [1], buffVal: ['100%'], buffBrefTxt: '对恶魔伤害+?', buffTxt: '对恶魔造成额外伤害(100%)' },
+            ],
+            specialList: [        // 特殊特性列表
+                { no: 1, name: '龙脉', count: 0, isFilter: false, buff: [2], buffVal: ['25%'], buffBrefTxt: '燃烧伤害+?', buffTxt: '攻击时附带25%燃烧伤害' }
+            ],
+            heros: [              // 英雄列表
+                { quality: 1, race: 5, occupation: 5, name: '圣堂刺客', selected: false },
+                { quality: 1, race: 4, occupation: 4, name: '蛇发女妖', selected: false },
+                { quality: 1, race: 2, occupation: 1, name: '剑圣', selected: false },
+
+                { quality: 2, race: 5, occupation: 2, name: '冰之女王', selected: false },
+                { quality: 2, race: 5, occupation: 4, name: '丘比特', selected: false },
+                { quality: 2, race: 5, occupation: 3, name: '奥丁', selected: false },
+                { quality: 2, race: 4, occupation: 6, name: '恶龙武僧', special: 1, selected: false },
+                { quality: 2, race: 4, occupation: 2, name: '痛苦女王', selected: false },
+                { quality: 2, race: 3, occupation: 6, name: '幸运儿', selected: false },
+                { quality: 2, race: 2, occupation: 6, name: '恶魔术士', selected: false },
+
+                { quality: 3, race: 5, occupation: 1, name: '审判天使', selected: false },
+                { quality: 3, race: 5, occupation: 6, name: '洛基', selected: false },
+                { quality: 3, race: 4, occupation: 3, name: '黑暗骑士', selected: false },
+                { quality: 3, race: 4, occupation: 1, name: '恶魔战士', selected: false },
+                { quality: 3, race: 4, occupation: 5, name: '恶魔王子', selected: false },
+                { quality: 3, race: 3, occupation: 2, name: '风精灵', selected: false },
+                { quality: 3, race: 3, occupation: 4, name: '风行者', selected: false },
+                { quality: 3, race: 2, occupation: 3, name: '萨满祭司', selected: false },
+                { quality: 3, race: 1, occupation: 1, name: '龙战士', special: 1, selected: false },
+                { quality: 3, race: 3, occupation: 7, name: '恶魔猎人', selected: false },
+
+                { quality: 4, race: 3, occupation: 3, name: '森林精灵', selected: false },
+                { quality: 4, race: 3, occupation: 5, name: '精灵王子', selected: false },
+                { quality: 4, race: 3, occupation: 1, name: '德鲁伊', selected: false },
+                { quality: 4, race: 2, occupation: 1, name: '狂战士', selected: false },
+                { quality: 4, race: 2, occupation: 2, name: '食人魔法师', selected: false },
+                { quality: 4, race: 2, occupation: 4, name: '剧毒猎手', selected: false },
+                { quality: 4, race: 2, occupation: 1, name: '食人魔勇士', selected: false },
+
+                { quality: 5, race: 1, occupation: 1, name: '皇家骑士', selected: false },
+                { quality: 5, race: 1, occupation: 4, name: '皇家游侠', selected: false },
+                { quality: 5, race: 1, occupation: 2, name: '秀逗魔法士', selected: false },
+                { quality: 5, race: 1, occupation: 3, name: '圣光使者', selected: false },
+                { quality: 5, race: 1, occupation: 5, name: '绿林盗贼', selected: false },
+            ],
+        }
+    },
+    computed: {
+        // 羁绊计算
+        relations() {
+            return this.raceList.concat(this.occupationList).concat(this.specialList)
+            .filter(r => r.count)
+            .sort((a,b) => b.count - a.count)
+            .map(p => {
+                const buffLv = this.getBuffLv(p.count, p.buff)
+                return {
+                    name: p.name, // 名称
+                    count: p.count, // 个数统计
+                    max: p.buff[p.buff.length-1], // 满羁绊个数
+                    buffLv: buffLv, // buff级别
+                    buffFullLv: p.buff.length, // buff最高级别
+                    buffView: this.getBuffLvStars(buffLv, p.buff.length),
+                    buffBrefTxt: p.buffBrefTxt.replace('?',p.buffVal[buffLv?buffLv-1:buffLv]) + `(${p.name})` // buff简介
+                }
+            })
+            .sort((a,b) => b.buffLv - a.buffLv)
+        },
+        // 上阵人口计算
+        population() {
+            return this.heros.filter(h => h.selected).length
+        }
+    },
+    methods: {
+        // 英雄选择
+        heroSelectTrigger(hero) {
+            if(this.population >= 10 && !hero.selected) return
+
+            hero.selected = !hero.selected
+            const tmp = hero.selected ? 1 : -1
+            const race = this.raceList.find(r => r.no === hero.race)
+            if(race) race.count += tmp
+            const occupation = this.occupationList.find(o => o.no === hero.occupation)
+            if(occupation) occupation.count += tmp
+            const special = this.specialList.find(s => s.no === hero.special)
+            if(special) special.count += tmp
+        },
+        // buff等级
+        getBuffLv(count, buff) {
+            let lv = 0
+            for(let i = 0, len = buff.length; i < len; i++) {
+                if(count > buff[i]) {
+                    lv++
+                    continue
+                } else if(count === buff[i]) {
+                    lv++
+                    break
+                } else {
+                    break
+                }
+            }
+            return lv
+        },
+        // buff等级标识
+        getBuffLvStars(lv, fullLv) {
+            let res = ''
+            for(let i = 0; i < lv; i++) {
+                res += '◼'
+            }
+            for(let i = 0, tmp = fullLv - lv; i < tmp; i++) {
+                res += '◻'
+            }
+            return res
+        },
+        // 筛选栏
+        showFilterTrigger() {
+            this.showFilters = !this.showFilters
+            this.clearFilters()
+        },
+        // 清空筛选项
+        clearFilters() {
+            this.raceList.forEach(r => r.isFilter = false)
+            this.occupationList.forEach(o => o.isFilter = false)
+            this.specialList.forEach(s => s.isFilter = false)
+        }
+    }
+}
+Vue.createApp(AttributeBindingApp).mount('#app')
+</script>
+<style>
+:root {
+    --color-lv-1: orange;
+    --color-lv-2: rgb(225, 0, 255);
+    --color-lv-3: rgb(56, 142, 255);
+    --color-lv-4: rgb(0, 160, 0);
+    --color-lv-5: rgb(117, 117, 117);
+}
+body {
+  height: 100%;
+  margin: 0;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-family: Helvetica Neue, Helvetica, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Arial, sans-serif;
+}
+
+html {height: 100%;box-sizing: border-box;}
+
+#app {padding: 20px;}
+
+button,.hero-display span {
+    padding: 5px 10px;
+    margin: 0 5px 10px 0;
+}
+
+.filters-container {
+    border: 1px solid #999999;
+    border-radius: 5px;
+    padding: 0 10px;
+    margin-bottom: 10px;
+}
+
+.span-filter-item {
+    cursor: pointer;
+    user-select: none;
+    margin-right: 5px;
+}
+.span-filter-item.is-filter {color: var(--color-lv-3);}
+
+/* hero css */
+.hero-display span {
+    cursor: pointer;
+    user-select: none;
+    display: inline-block;
+    border-radius: 3px;
+    border: 1px solid #999999;
+}
+/* normal: border, color */
+.hero-display>div:first-child>span {border-color: var(--color-lv-1);color:var(--color-lv-1);}
+.hero-display>div:nth-child(2)>span {border-color: var(--color-lv-2);color:var(--color-lv-2);}
+.hero-display>div:nth-child(3)>span {border-color: var(--color-lv-3);color:var(--color-lv-3);}
+.hero-display>div:nth-child(4)>span {border-color: var(--color-lv-4);color:var(--color-lv-4);}
+.hero-display>div:nth-child(5)>span {border-color: var(--color-lv-5);color:var(--color-lv-5);}
+/* selected: bg */
+/* .hero-display span.hero-selected {background-color: rgb(112, 219, 214);} */
+.hero-display span.hero-selected {color: white !important;}
+.hero-display>div:first-child>span.hero-selected {background-color: var(--color-lv-1);}
+.hero-display>div:nth-child(2)>span.hero-selected {background-color: var(--color-lv-2);}
+.hero-display>div:nth-child(3)>span.hero-selected {background-color: var(--color-lv-3);}
+.hero-display>div:nth-child(4)>span.hero-selected {background-color: var(--color-lv-4);}
+.hero-display>div:nth-child(5)>span.hero-selected {background-color: var(--color-lv-5);}
+/* filtered: box-shadow */
+/* .hero-display span.hero-in-filter {box-shadow: 0px 0px 5px 2px var(--color-lv-1);} */
+.hero-display>div:first-child>span.hero-in-filter {box-shadow: 0px 0px 5px 2px var(--color-lv-1);}
+.hero-display>div:nth-child(2)>span.hero-in-filter {box-shadow: 0px 0px 5px 2px var(--color-lv-2);}
+.hero-display>div:nth-child(3)>span.hero-in-filter {box-shadow: 0px 0px 5px 2px var(--color-lv-3);}
+.hero-display>div:nth-child(4)>span.hero-in-filter {box-shadow: 0px 0px 5px 2px var(--color-lv-4);}
+.hero-display>div:nth-child(5)>span.hero-in-filter {box-shadow: 0px 0px 5px 2px var(--color-lv-5);}
+
+/* relations */
+.hero-relations span {display: block;padding: 5px 10px;}
+.hero-relations span.buff-lv0 {color:var(--color-lv-5);}
+.hero-relations span.buff-lv1 {color:var(--color-lv-4);}
+.hero-relations span.buff-lv2 {color:var(--color-lv-3);}
+.hero-relations span.buff-lv3 {color:var(--color-lv-2);}
+
+@media screen and (max-width:500px) {
+    #app {
+        padding: 10px;
+        font-size: 12px !important;
+    }
+    button,.hero-display span {
+        padding: 3px 5px !important;
+        margin: 0 5px 8px 0 !important;
+    }
+}
+</style>
