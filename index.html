@@ -63,10 +63,15 @@
                 </div>
             </div>
             <!-- 阵容 -->
-            <p v-if="population">上阵人口：{{population}}</p>
-            <div v-show="relations?.length" class="hero-relations">
-                <div v-for="rel in relations" :key="rel.name">
-                    <span :class="'buff-lv'+rel.buffLv">{{rel.name}} ({{rel.count}}/{{rel.max}}) {{rel.buffView}} {{rel.buffBrefTxt}}</span>
+            <div v-show="population">
+                <p>
+                    上阵人口：{{population}}
+                    <a @click="clearSelection" class="clear-selection">清空</a>
+                </p>
+                <div class="hero-relations">
+                    <div v-for="rel in relations" :key="rel.name">
+                        <span :class="'buff-lv'+rel.buffLv">{{rel.name}} ({{rel.count}}/{{rel.max}}) {{rel.buffView}} {{rel.buffBrefTxt}}</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -213,6 +218,13 @@ const AttributeBindingApp = {
             this.raceList.forEach(r => r.isFilter = false)
             this.occupationList.forEach(o => o.isFilter = false)
             this.specialList.forEach(s => s.isFilter = false)
+        },
+        // 清空英雄选择
+        clearSelection() {
+            this.heros.forEach(h => h.selected = false)
+            this.raceList.forEach(r => r.count = 0)
+            this.occupationList.forEach(o => o.count = 0)
+            this.specialList.forEach(s => s.count = 0)
         }
     }
 }
@@ -294,6 +306,14 @@ button,.hero-display span {
 .hero-relations span.buff-lv1 {color:var(--color-lv-4);}
 .hero-relations span.buff-lv2 {color:var(--color-lv-3);}
 .hero-relations span.buff-lv3 {color:var(--color-lv-2);}
+
+.clear-selection {
+    margin-left: 10px;
+    user-select: none;
+    cursor: pointer;
+    color: var(--color-lv-3);
+}
+.clear-selection:active {font-weight: bold;}
 
 @media screen and (max-width:500px) {
     #app {
