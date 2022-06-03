@@ -96,7 +96,7 @@ const AttributeBindingApp = {
                 { no: 3, name: '信徒', count: 0, isFilter: false, buff: [2,4], buffVal: ['40%','80%'], buffBrefTxt: '护盾+?', buffTxt: '技能触发：生命最少的友军获得伤害减免的护盾(40%/80%)' },
                 { no: 4, name: '游侠', count: 0, isFilter: false, buff: [2,4], buffVal: ['30%','60%'], buffBrefTxt: '攻速+?', buffTxt: '提高游侠的攻速(30%/60%)' },
                 { no: 5, name: '强盗', count: 0, isFilter: false, buff: [2,4], buffVal: ['100%','200%'], buffBrefTxt: '背刺+?', buffTxt: '强盗在敌人背面可以造成背刺伤害(100%/200%)' },
-                { no: 6, name: '术士', count: 0, isFilter: false, buff: [2], buffVal: ['30%'], buffBrefTxt: '魔+50,目标减防-?', buffTxt: '初始魔法50，攻击时降低目标防御(-30%)' },
+                { no: 6, name: '术士', count: 0, isFilter: false, buff: [2,4], buffVal: ['30%','-60%'], buffBrefTxt: '目标防御-?,魔+50', buffTxt: '攻击时降低目标防御(-15%/-30%),初始SP(+50/+50)' },
                 { no: 7, name: '魔猎人', count: 0, isFilter: false, buff: [1], buffVal: ['100%'], buffBrefTxt: '对恶魔伤害+?', buffTxt: '对恶魔造成额外伤害(100%)' },
             ],
             specialList: [        // 特殊特性列表
@@ -106,6 +106,7 @@ const AttributeBindingApp = {
                 { quality: 1, race: 5, occupation: 5, name: '圣堂刺客', selected: false },
                 { quality: 1, race: 4, occupation: 4, name: '蛇发女妖', selected: false },
                 { quality: 1, race: 2, occupation: 1, name: '剑圣', selected: false },
+                { quality: 1, race: 4, occupation: 2, name: '刺猬·孙', selected: false },
 
                 { quality: 2, race: 5, occupation: 2, name: '冰之女王', selected: false },
                 { quality: 2, race: 5, occupation: 4, name: '丘比特', selected: false },
@@ -115,6 +116,7 @@ const AttributeBindingApp = {
                 { quality: 2, race: 3, occupation: 6, name: '幸运儿', selected: false },
                 { quality: 2, race: 2, occupation: 6, name: '恶魔术士', selected: false },
                 { quality: 2, race: 2, occupation: 5, name: '呆瓜瓜', selected: false },
+                { quality: 2, race: 1, occupation: 6, name: '龙卷风', selected: false },
 
                 { quality: 3, race: 5, occupation: 1, name: '审判天使', selected: false },
                 { quality: 3, race: 5, occupation: 6, name: '洛基', selected: false },
