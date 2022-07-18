@@ -88,7 +88,8 @@ const AttributeBindingApp = {
                 { no: 2, name: '兽人', count: 0, isFilter: false, buff: [2,4,6], buffVal: ['15%','30%','45%'], buffBrefTxt: '吸取+?', buffTxt: '兽人攻击时吸取生命(15%/30%/45%)' },
                 { no: 3, name: '精灵', count: 0, isFilter: false, buff: [2,4,6], buffVal: ['25%','50%','75%'], buffBrefTxt: '暴击+?', buffTxt: '提高精灵的暴击(25%/50%/75%)' },
                 { no: 4, name: '恶魔', count: 0, isFilter: false, buff: [2,4,6], buffVal: ['30%','60%','100%'], buffBrefTxt: '伤害+?', buffTxt: '提高恶魔的伤害(30%/60%/100%)' },
-                { no: 5, name: '神族', count: 0, isFilter: false, buff: [2,4,6], buffVal: ['5','10','15'], buffBrefTxt: '吸取SP+?', buffTxt: '神族攻击时吸取SP(5/10/15)' }
+                { no: 5, name: '神族', count: 0, isFilter: false, buff: [2,4,6], buffVal: ['5','10','15'], buffBrefTxt: '吸取SP+?', buffTxt: '神族攻击时吸取SP(5/10/15)' },
+                { no: 6, name: '天灾', count: 0, isFilter: false, buff: [2,4,6], buffVal: ['50%','75%','100%'], buffBrefTxt: '复活生命+?', buffTxt: '天灾25%几率复活生命(50%/75%/100%)' }
             ],
             occupationList: [     // 职业列表
                 { no: 1, name: '战士', count: 0, isFilter: false, buff: [2,4], buffVal: ['25%','50%'], buffBrefTxt: '伤害减免+?', buffTxt: '战士伤害减免(25%/50%)' },
@@ -142,6 +143,11 @@ const AttributeBindingApp = {
                 { quality: 5, race: 1, occupation: 2, name: '秀逗魔导士', selected: false },
                 { quality: 5, race: 1, occupation: 3, name: '圣光使者', selected: false },
                 { quality: 5, race: 1, occupation: 5, name: '绿林盗贼', selected: false },
+                
+                { quality: 2, race: 6, occupation: 2, name: '果奶', selected: false },
+                { quality: 2, race: 6, occupation: 4, name: '黑暗游侠', selected: false },
+                { quality: 3, race: 6, occupation: 3, name: '死亡骑士', selected: false },
+                { quality: 2, race: 6, occupation: 5, name: '毒药', special: 1, selected: false },
             ],
         }
     },
