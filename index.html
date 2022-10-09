@@ -101,7 +101,8 @@ const AttributeBindingApp = {
                 { no: 7, name: '魔猎人', count: 0, isFilter: false, buff: [1], buffVal: ['100%'], buffBrefTxt: '对恶魔伤害+?', buffTxt: '对恶魔造成额外伤害(100%)' },
             ],
             specialList: [        // 特殊特性列表
-                { no: 1, name: '龙脉', count: 0, isFilter: false, buff: [2], buffVal: ['25%'], buffBrefTxt: '燃烧伤害+?', buffTxt: '攻击时附带25%燃烧伤害' }
+                { no: 1, name: '龙脉', count: 0, isFilter: false, buff: [2], buffVal: ['25%'], buffBrefTxt: '燃烧伤害+?', buffTxt: '攻击时附带25%燃烧伤害' },
+                { no: 2, name: '恋人', count: 0, isFilter: false, buff: [2], buffVal: ['2%'], buffBrefTxt: 'HP恢复+?', buffTxt: 'HP恢复（2%）' }
             ],
             heros: [              // 英雄列表
                 { quality: 1, race: 5, occupation: 5, name: '圣堂刺客', selected: false },
@@ -138,13 +139,13 @@ const AttributeBindingApp = {
                 { quality: 4, race: 2, occupation: 4, name: '剧毒猎手', selected: false },
                 { quality: 4, race: 2, occupation: 1, name: '食人魔勇士', selected: false },
 
-                { quality: 5, race: 1, occupation: 1, name: '皇家骑士', selected: false },
+                { quality: 5, race: 1, occupation: 1, name: '皇家骑士', special: 2, selected: false },
                 { quality: 5, race: 1, occupation: 4, name: '皇家游侠', selected: false },
                 { quality: 5, race: 1, occupation: 2, name: '秀逗魔导士', selected: false },
                 { quality: 5, race: 1, occupation: 3, name: '圣光使者', selected: false },
                 { quality: 5, race: 1, occupation: 5, name: '绿林盗贼', selected: false },
                 
-                { quality: 2, race: 6, occupation: 2, name: '果奶', selected: false },
+                { quality: 2, race: 6, occupation: 2, name: '果奶', special: 2, selected: false },
                 { quality: 2, race: 6, occupation: 4, name: '黑暗游侠', selected: false },
                 { quality: 3, race: 6, occupation: 3, name: '死亡骑士', selected: false },
                 { quality: 2, race: 6, occupation: 5, name: '毒药', special: 1, selected: false },
